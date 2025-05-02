@@ -800,7 +800,6 @@ def opponent_play():
 
 def check_for_go(last_player):
 
-
     for card in playerHand:
         if count + card_point_value(card) <= MAXCOUNT:
             return False
@@ -836,21 +835,18 @@ def check_for_run(played_cards):
 
     max_length = min(7, len(played_cards))  # Maximum 7 cards in a run during play
 
-    # Try different lengths starting from the most recent cards
+    #Try different lengths starting from the most recent cards
     for length in range(max_length, 2, -1):
-        # Take the last 'length' cards in their played order
         recent_cards = played_cards[-length:]
 
-        # Get ranks in the order they were played
         ranks = []
         for card in recent_cards:
             rank = deck.get_value(card)
             ranks.append(rank_order[rank])
 
-        # Make a sorted copy to check if these numbers could form a run
         sorted_ranks = sorted(ranks)
         if sorted_ranks == list(range(min(sorted_ranks), max(sorted_ranks) + 1)):
-            return length  # Found a run
+            return length
 
     return 0
 
@@ -984,28 +980,6 @@ def handle_both_passed():
     play_frame.config(text='Count = 0')
 
 
-
-
-
-def check_for_31(card_value):
-    global count
-    if count + card_value > MAXCOUNT:
-        return False
-    elif count + card_value == MAXCOUNT:
-        for widget in play_frame.winfo_children():
-            widget.destroy()
-        return "score"
-    else:
-        # Check if this would be the last playable card
-        if count + card_value < MAXCOUNT:
-            temp_count = count + card_value
-            # Check if any other cards could be played after this
-            for card in playerHand + opponentHand:
-                if card_point_value(card) + temp_count <= MAXCOUNT:
-                    return True
-        return True
-
-
 def no_cards():
     if not playerHand and not opponentHand:
         info_label.config(text="All cards played.")
@@ -1022,19 +996,10 @@ def show():
     playerHand = player_played_cards.copy()
     opponentHand = opponent_played_cards.copy()
 
-
     player_played_cards.clear()
     opponent_played_cards.clear()
 
-
-
     info_label.config(text="Scoring hands now...")
-
-    print(playerHand)
-    print(opponentHand)
-
-    print(score_hand(playerHand))
-    print(score_hand(opponentHand))
 
     if dealer == 'player':
 
@@ -1056,7 +1021,6 @@ def show():
 
         info_label.config(text="Opponent scored = " + str(new_o_points) +  "\n"
                                    " you scored = " + str(new_p_points))
-
 
     game_frame.after(3000, score_crib)
 
@@ -1083,14 +1047,11 @@ def update_o_points(points):
 def score_crib():
     global o_points, p_points, dealer
 
-    print(score_hand(crib))
-
     if dealer == 'opponent':
         new_o_points = score_hand(crib)
         update_o_points(new_o_points)
         opponent_points.config(text="Opponent Points = " + str(o_points))
         info_label.config(text="In their crib, opponent scored " + str(new_o_points))
-
         dealer = 'player'
 
     elif dealer == 'player':
@@ -1184,14 +1145,19 @@ def score_hand(hand):
 
     starter_suit = deck.get_suit(starter_card)
 
+    hand_suits = [deck.get_suit(c) for c in hand]
+    first_four_suits = hand_suits[:4]
+    if len(set(first_four_suits)) == 1:
+        flush_points = 4
+        if starter_suit == first_four_suits[0]:
+            flush_points += 1
+
     for card in hand:
         if deck.get_value(card) == 'jack' and deck.get_suit(card) == starter_suit:
             nobs_points = 1
             break
 
     hand.append(starter_card)
-
-    print(hand)
 
     rank_order = {'ace': 1, '2': 2, '3': 3, '4': 4, '5': 5,
                   '6': 6, '7': 7, '8': 8, '9': 9, '10': 10,
@@ -1205,13 +1171,8 @@ def score_hand(hand):
         run_ranks.append(rank_order[rank])
         scoring_values.append(card_point_value(card))
 
-
     scoring_values.sort()
     run_ranks.sort()
-
-
-
-
 
     # Fifteens
     for r in range(2, len(scoring_values) + 1):
@@ -1250,19 +1211,13 @@ def score_hand(hand):
         elif cnt == 4:
             pair_points += 12
 
-    # Flushes
-    suits = [deck.get_suit(c) for c in hand]
-    if len(set(suits)) == 1:
-        flush_points = 4
+
 
     total_points = fifteen_points + run_points + pair_points + flush_points + nobs_points
 
     hand.pop()
 
     return total_points
-
-
-
 
 #------------------------frames------------------#
 
