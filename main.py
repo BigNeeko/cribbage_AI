@@ -120,8 +120,6 @@ def card_selection():
                 game_frame.pack(fill="both", expand=True)
             ))
             new_round()
-
-
     #display deck
 
     for i in range(4):
@@ -150,8 +148,9 @@ def new_game():
 
 
 def new_round():
-    global all_played_cards, count
-
+    global all_played_cards, count, player_column, opponent_column
+    player_column = 0
+    opponent_column = 0
     count = 0
 
     crib_frame.grid_remove()
@@ -266,14 +265,8 @@ def select_card(card_name, button):
             confirm_button.grid(row=1, column=0, pady=10)
             cancel_button.grid(row=1, column=1, pady=10)
 
-
-
-
-
     elif stage == 'play':
         play_card(card_name, button)
-
-
 
     else:
         print("invalid")
@@ -457,8 +450,6 @@ def move_to_crib():
     back_label = tk.Label(crib_frame, image=card_back)
     back_label.pack(side="left", padx=5)
 
-    print(opponentHand)
-
     discard = monte_carlo_discard(opponentHand)
     for card in discard:
         opponentHand.remove(card)
@@ -468,7 +459,6 @@ def move_to_crib():
         print(f"{card} has gone to the crib")
 
         display_sorted_hands()
-
 
     confirm_button.grid_remove()
     cancel_button.grid_remove()
@@ -638,7 +628,6 @@ def cut_for_starter_card():
 
         starter_card = random.choice(deck.cards)
 
-
         card_img = resize_cards(f'Card Images/{starter_card}.png')
         label = tk.Label(cut_frame, image=card_img)
         label.image = card_img
@@ -653,7 +642,6 @@ def cut_for_starter_card():
             go_button.grid(row=0, column=2, pady=10),
             opponent_play()
         ))
-
     else:
         print("Invalid dealer.")
 
@@ -677,7 +665,7 @@ def check_for_jack():
 
 
 def play_card(card_name=None, button=None):
-    global count, p_points, player_turn, player_passed, opponent_passed, player_column, player_played_cards, all_played_cards
+    global count, p_points, player_turn, player_passed, opponent_passed,    player_column, player_played_cards, all_played_cards
 
     #No cards in hand
     if not playerHand:
@@ -695,9 +683,6 @@ def play_card(card_name=None, button=None):
     if count + card_value > MAXCOUNT:
         info_label.config(text="Card exceeds 31. Choose another.")
         return
-
-
-
 
     #Valid card play
     playerHand.remove(card_name)
@@ -781,7 +766,7 @@ def opponent_play():
         player_turn = True
         return
 
-    # Valid play
+    #Valid play
     opponentHand.remove(best_card)
     opponent_played_cards.append(best_card)
     all_played_cards.append(best_card)
@@ -792,6 +777,7 @@ def opponent_play():
     points_scored, messages = score_play(all_played_cards)
     if points_scored > 0:
         o_points += points_scored
+        check_winner(o_points, 'Opponent')
         info_label.config(text="Opponent scores " + " and ".join(messages) + "!")
         opponent_points.config(text="Opponent Points = " + str(o_points))
 
